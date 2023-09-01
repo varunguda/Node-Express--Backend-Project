@@ -4,10 +4,13 @@ const mongoose = require("mongoose");
 const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+const { config } = require("dotenv")
 
-const JWT_SECRET = 'sajbsrajegvkidn27tE$#ms';
+config({
+    path: "./config.env"
+});
 
-mongoose.connect("mongodb+srv://varunguda:YALzutP42S2338Af@personalcluster.9zui96r.mongodb.net/", {
+mongoose.connect(process.env.MONGO_URI, {
     dbName: "backend",
 })
 .then(()=>{
@@ -65,7 +68,7 @@ app.set("view engine", "ejs")
 const isAuth = async(req, res, next) =>{
     const { token } = req.cookies;
     if(token){
-        const decoded = jwt.decode(token, JWT_SECRET);
+        const decoded = jwt.decode(token, process.env.JWT_SECRET);
         req.user = await User.findById(decoded._id);
     }
     next();
@@ -119,7 +122,7 @@ app.post('/login', async (req, res)=>{
 
     const token = jwt.sign({
         _id: user._id
-    }, JWT_SECRET)
+    }, process.env.JWT_SECRET)
     res.cookie("token", token, {
         httpOnly: true,
         expires: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000)
@@ -161,7 +164,7 @@ app.post('/signup', async(req, res)=>{
 
     const token = jwt.sign({
         _id: newUser._id
-    }, JWT_SECRET);
+    }, process.env.JWT_SECRET);
     res.cookie("token", token, {
         httpOnly: true,
         expires: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000)
@@ -188,6 +191,6 @@ app.post('/sendmessage', async(req, res)=>{
     res.redirect("/success");
 })
 
-app.listen(5000,()=>{
+app.listen(process.env.PORT,()=>{
     console.log('SERVER ESTABLISHED SUCCESSFULLY!')
 })
